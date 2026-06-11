@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Space City Shine — Field App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0f2545;
+  --navy2:#1a3a6b;
+  --gold:#c9a84c;
+  --gold2:#f0c96e;
+  --bg:#f7f5f0;
+  --card:#ffffff;
+  --text:#0f2545;
+  --muted:#6b7280;
+  --border:#e5e0d5;
+  --radius:12px;
+  --font-display:'DM Serif Display',serif;
+  --font-body:'DM Sans',sans-serif;
+}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* NAV */
+.nav{background:var(--navy);padding:0;display:flex;flex-direction:column}
+.nav-brand{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px}
+.nav-logo{font-family:var(--font-display);font-size:20px;color:#fff;letter-spacing:0.01em}
+.nav-logo span{color:var(--gold)}
+.nav-save{font-size:11px;color:rgba(255,255,255,0.5);opacity:0;transition:opacity 0.3s}
+.nav-save.show{opacity:1}
+.nav-tabs{display:flex;border-top:1px solid rgba(255,255,255,0.1)}
+.nav-tab{flex:1;padding:10px 4px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);background:transparent;border:none;cursor:pointer;transition:all 0.15s;font-family:var(--font-body);border-bottom:2px solid transparent;letter-spacing:0.02em}
+.nav-tab.active{color:var(--gold2);border-bottom-color:var(--gold)}
+.nav-tab:hover:not(.active){color:rgba(255,255,255,0.8)}
+
+/* PAGES */
+.page{display:none;padding:16px;max-width:700px;margin:0 auto}
+.page.active{display:block}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.stat{background:var(--card);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid var(--border)}
+.stat-val{font-size:22px;font-weight:500;color:var(--navy)}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:0.03em}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.card-title{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-grid.full{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;color:var(--muted);font-weight:500}
+.field input,.field select,.field textarea{font-size:14px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);width:100%;font-family:var(--font-body);outline:none;transition:border-color 0.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--navy2)}
+.field textarea{resize:vertical;min-height:64px}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:8px;margin-top:14px}
+.btn{padding:9px 18px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);font-family:var(--font-body);transition:all 0.15s}
+.btn:hover{background:var(--bg)}
+.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.primary:hover{background:var(--navy2)}
+.btn.gold{background:var(--gold);color:#fff;border-color:var(--gold)}
+.btn.danger{color:#b91c1c;border-color:#fca5a5}
+.btn.danger:hover{background:#fef2f2}
+
+/* CUSTOMER LIST */
+.cust-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+.cust-card:hover{border-color:var(--navy2);transform:translateY(-1px)}
+.cust-name{font-size:15px;font-weight:500;color:var(--navy)}
+.cust-addr{font-size:12px;color:var(--muted);margin-top:2px}
+.cust-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap}
+.b-quoted{background:#fef9c3;color:#854d0e}
+.b-scheduled{background:#dbeafe;color:#1e40af}
+.b-completed{background:#dcfce7;color:#166534}
+.b-noanswer{background:#f3f4f6;color:#6b7280}
+.b-notinterested{background:#fee2e2;color:#991b1b}
+
+/* CHECKS */
+.check-row{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer}
+.check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--navy);cursor:pointer}
+
+/* SEARCH / FILTER */
+.search{width:100%;padding:9px 13px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);margin-bottom:10px;font-family:var(--font-body);outline:none}
+.search:focus{border-color:var(--navy2)}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.fb{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--muted);font-family:var(--font-body);transition:all 0.15s}
+.fb.on,.fb:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* MAP PAGE */
+.map-embed{width:100%;height:360px;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:14px}
+.map-embed iframe{width:100%;height:100%;border:none}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.street-list{display:flex;flex-direction:column;gap:5px;max-height:460px;overflow-y:auto;padding-right:2px}
+.street-row{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;background:var(--card);border:1px solid var(--border);border-radius:10px;gap:8px}
+.street-name{font-size:13px;font-weight:500;color:var(--navy);flex-shrink:0;min-width:130px}
+.street-status{font-size:11px;color:var(--muted);margin-top:1px}
+.sbts{display:flex;gap:3px;flex-wrap:wrap;flex:1;justify-content:flex-end}
+.sbt{font-size:11px;padding:3px 7px;border-radius:14px;border:1px solid var(--border);cursor:pointer;background:#fff;color:var(--muted);font-family:var(--font-body);transition:all 0.12s;white-space:nowrap}
+.sbt:hover{border-color:var(--navy)}
+.sbt.k{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+.sbt.l{background:#dcfce7;color:#166534;border-color:#86efac}
+.sbt.s{background:#fef9c3;color:#854d0e;border-color:#fde047}
+.sbt.c{background:#d1fae5;color:#065f46;border-color:#6ee7b7}
+.sbt.n{background:#f3f4f6;color:#6b7280;border-color:#d1d5db}
+.sbt.x{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:14px}
+.empty-icon{font-size:36px;margin-bottom:8px;opacity:0.3}
+
+/* DETAIL */
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.det-item .lbl{font-size:11px;color:var(--muted);margin-bottom:2px}
+.det-item .val{font-size:13px;font-weight:500;color:var(--navy)}
+.check-display{display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:7px;color:var(--text)}
+
+/* SECTION HDR */
+.sec{font-family:var(--font-display);font-size:18px;color:var(--navy);margin-bottom:14px}
+
+@media(max-width:480px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .det-grid{grid-template-columns:1fr}
+  .sbts{justify-content:flex-start}
+  .street-row{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">Space City <span>Shine</span></div>
+    <span class="nav-save" id="sav">&#9729; Saving...</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goto('dashboard')">&#9632; Dashboard</button>
+    <button class="nav-tab" onclick="goto('customers')">&#128100; Customers</button>
+    <button class="nav-tab" onclick="goto('add')">&#43; Add</button>
+    <button class="nav-tab" onclick="goto('map')">&#128205; Streets</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div style="margin:16px 0 6px"><span class="sec">Overview</span></div>
+  <div class="stats" id="dash-stats">
+    <div class="stat"><div class="stat-val" id="d-leads">0</div><div class="stat-lbl">Total leads</div></div>
+    <div class="stat"><div class="stat-val" id="d-sched">0</div><div class="stat-lbl">Scheduled</div></div>
+    <div class="stat"><div class="stat-val" id="d-done">0</div><div class="stat-lbl">Completed</div></div>
+    <div class="stat"><div class="stat-val" id="d-rev">$0</div><div class="stat-lbl">Revenue</div></div>
+  </div>
+  <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat"><div class="stat-val" id="d-streets">0%</div><div class="stat-lbl">Streets covered</div></div>
+    <div class="stat"><div class="stat-val" id="d-reviews">0</div><div class="stat-lbl">Google reviews</div></div>
+    <div class="stat"><div class="stat-val" id="d-refs">0</div><div class="stat-lbl">Referrals</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Upcoming appointments</div>
+    <div id="d-upcoming"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Follow-up needed</div>
+    <div id="d-followup"></div>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <div style="margin:16px 0 6px"><span class="sec">Customers</span></div>
+  <input class="search" type="text" placeholder="Search name or address..." oninput="renderCusts(this.value)" />
+  <div class="filter-row">
+    <button class="fb on" onclick="setCF('all',this)">All</button>
+    <button class="fb" onclick="setCF('quoted',this)">Quoted</button>
+    <button class="fb" onclick="setCF('scheduled',this)">Scheduled</button>
+    <button class="fb" onclick="setCF('completed',this)">Completed</button>
+    <button class="fb" onclick="setCF('noanswer',this)">No answer</button>
+    <button class="fb" onclick="setCF('notinterested',this)">Not interested</button>
+  </div>
+  <div id="cust-list"></div>
+</div>
+
+<!-- ADD / EDIT -->
+<div class="page" id="page-add">
+  <div style="margin:16px 0 6px"><span class="sec" id="add-title">New customer</span></div>
+
+  <div class="card">
+    <div class="card-title">Contact info</div>
+    <div class="form-grid">
+      <div class="field"><label>First name</label><input id="f-first" type="text" placeholder="Jane" /></div>
+      <div class="field"><label>Last name</label><input id="f-last" type="text" placeholder="Smith" /></div>
+      <div class="field"><label>Phone</label><input id="f-phone" type="tel" placeholder="(713) 555-0000" /></div>
+      <div class="field"><label>Source</label>
+        <select id="f-source">
+          <option value="door knock">Door knock</option>
+          <option value="referral">Referral</option>
+          <option value="qr code">QR code</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid full" style="margin-top:10px">
+      <div class="field"><label>Address</label><input id="f-addr" type="text" placeholder="1234 Sunset Blvd, West U" /></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Job details</div>
+    <div class="form-grid">
+      <div class="field"><label>Windows</label><input id="f-windows" type="number" placeholder="24" /></div>
+      <div class="field"><label>Stories</label><select id="f-stories"><option>1</option><option>2</option><option>3</option></select></div>
+      <div class="field"><label>Quoted price ($)</label><input id="f-price" type="number" placeholder="175" /></div>
+      <div class="field"><label>Status</label>
+        <select id="f-status">
+          <option value="quoted">Quoted</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="completed">Completed</option>
+          <option value="noanswer">No answer</option>
+          <option value="notinterested">Not interested</option>
+        </select>
+      </div>
+      <div class="field"><label>Appointment date</label><input id="f-date" type="date" /></div>
+      <div class="field"><label>Appointment time</label><input id="f-time" type="time" /></div>
+    </div>
+    <div class="form-grid full" style="margin-top:10px">
+      <div class="field"><label>Notes (gate code, dogs, etc.)</label><textarea id="f-notes" placeholder="Gate code 1234..."></textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Payment & follow-up</div>
+    <div class="form-grid">
+      <div class="field"><label>Amount paid ($)</label><input id="f-paid" type="number" placeholder="0" /></div>
+      <div class="field"><label>Payment method</label>
+        <select id="f-payment">
+          <option value="">—</option>
+          <option value="cash">Cash</option>
+          <option value="venmo">Venmo</option>
+          <option value="zelle">Zelle</option>
+          <option value="check">Check</option>
+        </select>
+      </div>
+      <div class="field"><label>Referred by</label><input id="f-refby" type="text" placeholder="John on Sunset Blvd" /></div>
+    </div>
+    <div style="margin-top:12px">
+      <label class="check-row"><input type="checkbox" id="f-hanger" /> $20 hanger discount applied</label>
+      <label class="check-row"><input type="checkbox" id="f-conf" /> Confirmation text sent</label>
+      <label class="check-row"><input type="checkbox" id="f-reftxt" /> Referral offer text sent</label>
+      <label class="check-row"><input type="checkbox" id="f-referred" /> Has referred someone</label>
+      <label class="check-row"><input type="checkbox" id="f-rask" /> Asked for Google review</label>
+      <label class="check-row"><input type="checkbox" id="f-rleft" /> Left a Google review</label>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn primary" onclick="saveCustomer()">Save customer</button>
+    <button class="btn" onclick="clearForm();goto('customers')">Cancel</button>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="page" id="page-detail">
+  <div style="margin:16px 0 6px;display:flex;align-items:center;gap:10px">
+    <button class="btn" onclick="goto('customers')" style="padding:6px 12px;font-size:12px">&#8592; Back</button>
+    <span class="sec" id="det-name" style="margin:0"></span>
+  </div>
+  <div id="det-content"></div>
+</div>
+
+<!-- MAP -->
+<div class="page" id="page-map">
+  <div style="margin:16px 0 6px"><span class="sec">Knock Map</span></div>
+  <div class="stats" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px">
+    <div class="stat"><div class="stat-val" id="m-total">0</div><div class="stat-lbl">Streets</div></div>
+    <div class="stat"><div class="stat-val" id="m-knocked">0</div><div class="stat-lbl">Knocked</div></div>
+    <div class="stat"><div class="stat-val" id="m-lead">0</div><div class="stat-lbl">Leads</div></div>
+    <div class="stat"><div class="stat-val" id="m-hanger">0</div><div class="stat-lbl">🪧 Hangers</div></div>
+    <div class="stat"><div class="stat-val" id="m-pct">0%</div><div class="stat-lbl">Coverage</div></div>
+  </div>
+
+  <div class="map-embed">
+    <iframe
+      src="https://www.openstreetmap.org/export/embed.html?bbox=-95.4600%2C29.7050%2C-95.4200%2C29.7300&layer=mapnik&marker=29.7172%2C-95.4358"
+      allowfullscreen loading="lazy" title="West U & Southside Place map"
+      style="width:100%;height:100%;border:none"></iframe>
+  </div>
+  <div style="text-align:right;margin-top:4px;margin-bottom:8px">
+    <a href="https://www.google.com/maps/@29.7172,-95.4358,15z" target="_blank" style="font-size:12px;color:var(--navy2);text-decoration:none">&#x1F517; Open in Google Maps</a>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="dot" style="background:#3b82f6"></div>Knocked</div>
+    <div class="leg"><div class="dot" style="background:#22c55e"></div>Lead</div>
+    <div class="leg"><div class="dot" style="background:#eab308"></div>Scheduled</div>
+    <div class="leg"><div class="dot" style="background:#10b981"></div>Completed</div>
+    <div class="leg"><div class="dot" style="background:#9ca3af"></div>No answer</div>
+    <div class="leg"><div class="dot" style="background:#ef4444"></div>Not interested</div>
+    <div class="leg"><span style="font-size:14px">🪧</span>Hanger left</div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:8px">
+    <input class="search" type="text" placeholder="Search streets..." oninput="renderStreets(this.value)" style="margin-bottom:0;flex:1" />
+    <select id="hood-filter" onchange="renderStreets(document.querySelector('#page-map .search').value)" style="font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-family:var(--font-body);outline:none">
+      <option value="all">All neighborhoods</option>
+      <option value="West U">West U</option>
+      <option value="Southside">Southside Place</option>
+    </select>
+  </div>
+  <div class="filter-row">
+    <button class="fb on" onclick="setSF('all',this)">All</button>
+    <button class="fb" onclick="setSF('none',this)">Not started</button>
+    <button class="fb" onclick="setSF('knocked',this)">Knocked</button>
+    <button class="fb" onclick="setSF('lead',this)">Leads</button>
+    <button class="fb" onclick="setSF('scheduled',this)">Scheduled</button>
+    <button class="fb" onclick="setSF('completed',this)">Completed</button>
+    <button class="fb" onclick="setSF('noanswer',this)">No answer</button>
+  </div>
+  <div class="street-list" id="street-list"></div>
+</div>
+
+<script>
+const STREET_DATA=[
+  // West University Place
+  {name:"Auden St",hood:"West U"},
+  {name:"Bellaire Blvd",hood:"West U"},
+  {name:"Bissonnet St",hood:"West U"},
+  {name:"Bronte St",hood:"West U"},
+  {name:"Browning St",hood:"West U"},
+  {name:"Byron St",hood:"West U"},
+  {name:"Carnegie St",hood:"West U"},
+  {name:"Cason St",hood:"West U"},
+  {name:"Chaucer St",hood:"West U"},
+  {name:"Chevy Chase Dr",hood:"West U"},
+  {name:"Childress St",hood:"West U"},
+  {name:"Coleridge St",hood:"West U"},
+  {name:"College St",hood:"West U"},
+  {name:"Community Dr",hood:"West U"},
+  {name:"Cornell St",hood:"West U"},
+  {name:"Cowper St",hood:"West U"},
+  {name:"Dryden St",hood:"West U"},
+  {name:"Duke St",hood:"West U"},
+  {name:"Edloe St",hood:"West U"},
+  {name:"Elm St",hood:"West U"},
+  {name:"Georgetown St",hood:"West U"},
+  {name:"Glenmont Dr",hood:"West U"},
+  {name:"Goldsmith St",hood:"West U"},
+  {name:"Graustark St",hood:"West U"},
+  {name:"Greenbriar Dr",hood:"West U"},
+  {name:"Hadley St",hood:"West U"},
+  {name:"Harvard St",hood:"West U"},
+  {name:"Holcombe Blvd",hood:"West U"},
+  {name:"Kirby Dr",hood:"West U"},
+  {name:"Law St",hood:"West U"},
+  {name:"Lehigh St",hood:"West U"},
+  {name:"Mercer St",hood:"West U"},
+  {name:"Milton St",hood:"West U"},
+  {name:"Morningside Dr",hood:"West U"},
+  {name:"Notre Dame St",hood:"West U"},
+  {name:"Oxford St",hood:"West U"},
+  {name:"Plumb St",hood:"West U"},
+  {name:"Princeton St",hood:"West U"},
+  {name:"Purdue St",hood:"West U"},
+  {name:"Queens Rd",hood:"West U"},
+  {name:"Quenby St",hood:"West U"},
+  {name:"Radney St",hood:"West U"},
+  {name:"Rice Blvd",hood:"West U"},
+  {name:"Rutgers St",hood:"West U"},
+  {name:"Shakespeare St",hood:"West U"},
+  {name:"Sheridan St",hood:"West U"},
+  {name:"Southwestern St",hood:"West U"},
+  {name:"Sunset Blvd",hood:"West U"},
+  {name:"Swift Ave",hood:"West U"},
+  {name:"Tangley St",hood:"West U"},
+  {name:"Tennyson St",hood:"West U"},
+  {name:"Tulane Ave",hood:"West U"},
+  {name:"University Blvd",hood:"West U"},
+  {name:"Vanderbilt St",hood:"West U"},
+  {name:"Vermont St",hood:"West U"},
+  {name:"Wakeforest St",hood:"West U"},
+  {name:"Westpark Dr",hood:"West U"},
+  {name:"Weslayan St",hood:"West U"},
+  {name:"Yale St",hood:"West U"},
+  // Southside Place
+  {name:"Albans Rd",hood:"Southside"},
+  {name:"Auden St (S)",hood:"Southside"},
+  {name:"Braes Blvd",hood:"Southside"},
+  {name:"Buffalo Speedway",hood:"Southside"},
+  {name:"Edloe St (S)",hood:"Southside"},
+  {name:"Farbar St",hood:"Southside"},
+  {name:"Garnet St",hood:"Southside"},
+  {name:"Gramercy St",hood:"Southside"},
+  {name:"Maroneal St",hood:"Southside"},
+  {name:"Wroxton Rd",hood:"Southside"},
+  {name:"Southside Cir",hood:"Southside"},
+  {name:"Bellaire Blvd (S)",hood:"Southside"},
+];
+const STREETS=STREET_DATA.map(s=>s.name);
+const STREET_HOOD=Object.fromEntries(STREET_DATA.map(s=>[s.name,s.hood]));
+
+let customers=[], streets={}, editingId=null, custFilter='all', streetFilter='all';
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+
+async function loadAll(){
+  try{
+    const c=await window.storage.get('scs-customers-v2');
+    if(c&&c.value) customers=JSON.parse(c.value);
+  }catch(e){customers=[];}
+  try{
+    const s=await window.storage.get('scs-streets-v2');
+    if(s&&s.value) streets=JSON.parse(s.value);
+  }catch(e){streets={};}
+  renderAll();
+}
+
+async function saveAll(){
+  const el=document.getElementById('sav');
+  el.classList.add('show');
+  try{await window.storage.set('scs-customers-v2',JSON.stringify(customers));}catch(e){}
+  try{await window.storage.set('scs-streets-v2',JSON.stringify(streets));}catch(e){}
+  setTimeout(()=>el.classList.remove('show'),1500);
+}
+
+function renderAll(){
+  renderCusts();
+  renderStreets();
+  renderDash();
+  updateMapStats();
+}
+
+/* NAV */
+function goto(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const idx={dashboard:0,customers:1,add:2,map:3};
+  if(idx[page]!==undefined) document.querySelectorAll('.nav-tab')[idx[page]].classList.add('active');
+  if(page==='dashboard') renderDash();
+}
+
+/* DASHBOARD */
+function renderDash(){
+  document.getElementById('d-leads').textContent=customers.length;
+  document.getElementById('d-sched').textContent=customers.filter(c=>c.status==='scheduled').length;
+  document.getElementById('d-done').textContent=customers.filter(c=>c.status==='completed').length;
+  const rev=customers.reduce((a,c)=>a+(parseFloat(c.paid)||0),0);
+  document.getElementById('d-rev').textContent='$'+rev.toLocaleString();
+  document.getElementById('d-reviews').textContent=customers.filter(c=>c.rleft).length;
+  document.getElementById('d-refs').textContent=customers.filter(c=>c.referred).length;
+  const started=STREETS.filter(s=>streets[s]&&streets[s].status).length;
+  document.getElementById('d-streets').textContent=Math.round(started/STREETS.length*100)+'%';
+
+  const upcoming=customers.filter(c=>c.status==='scheduled'&&c.date).sort((a,b)=>a.date>b.date?1:-1).slice(0,5);
+  const upEl=document.getElementById('d-upcoming');
+  if(!upcoming.length){upEl.innerHTML='<div style="font-size:13px;color:#9ca3af;padding:4px 0">No upcoming appointments</div>';return;}
+  upEl.innerHTML=upcoming.map(c=>`
+    <div onclick="openDetail('${c.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;cursor:pointer">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#0f2545">${c.first} ${c.last}</div>
+        <div style="font-size:11px;color:#6b7280">${c.address||''}</div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#1a3a6b;font-weight:500">${fmtDate(c.date)} ${c.time?'@ '+fmtTime(c.time):''}</div>
+    </div>`).join('');
+
+  const followup=customers.filter(c=>c.status==='completed'&&(!c.rask||!c.rleft||!c.reftxt)).slice(0,5);
+  const fuEl=document.getElementById('d-followup');
+  if(!followup.length){fuEl.innerHTML='<div style="font-size:13px;color:#9ca3af;padding:4px 0">All caught up!</div>';return;}
+  fuEl.innerHTML=followup.map(c=>{
+    const tasks=[];
+    if(!c.reftxt) tasks.push('Send referral text');
+    if(!c.rask) tasks.push('Ask for review');
+    return `<div onclick="openDetail('${c.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;cursor:pointer">
+      <div style="font-size:13px;font-weight:500;color:#0f2545">${c.first} ${c.last}</div>
+      <div style="font-size:11px;color:#c9a84c">${tasks.join(' &middot; ')}</div>
+    </div>`;
+  }).join('');
+}
+
+/* CUSTOMERS */
+function setCF(f,btn){
+  custFilter=f;
+  document.querySelectorAll('#page-customers .fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderCusts(document.querySelector('#page-customers .search').value);
+}
+
+function renderCusts(q=''){
+  const el=document.getElementById('cust-list');
+  let list=customers.filter(c=>{
+    const mq=(c.first+' '+c.last+' '+(c.address||'')).toLowerCase().includes((q||'').toLowerCase());
+    const ms=custFilter==='all'||c.status===custFilter;
+    return mq&&ms;
+  }).sort((a,b)=>(b.created||0)-(a.created||0));
+
+  if(!list.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">&#128100;</div>No customers found</div>';
+    return;
+  }
+  el.innerHTML=list.map(c=>`
+    <div class="cust-card" onclick="openDetail('${c.id}')">
+      <div class="cust-row">
+        <div>
+          <div class="cust-name">${c.first} ${c.last}</div>
+          <div class="cust-addr">${c.address||'No address'}</div>
+          ${c.date?`<div style="font-size:11px;color:#6b7280;margin-top:3px">&#128197; ${fmtDate(c.date)} ${c.time?'@ '+fmtTime(c.time):''}</div>`:''}
+        </div>
+        <div style="text-align:right">
+          <span class="badge b-${c.status||'noanswer'}">${sLabel(c.status)}</span>
+          ${c.price?`<div style="font-size:12px;color:#6b7280;margin-top:4px">$${c.price} quoted</div>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openDetail(id){
+  const c=customers.find(x=>x.id===id);
+  if(!c) return;
+  editingId=id;
+  document.getElementById('det-name').textContent=c.first+' '+c.last;
+  const chk=(lbl,val)=>`<div class="check-display"><span style="font-size:15px">${val?'&#9989;':'&#9744;'}</span><span style="font-size:13px">${lbl}</span></div>`;
+  document.getElementById('det-content').innerHTML=`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div style="font-size:13px;color:#6b7280">${c.address||'No address'}</div>
+          <div style="font-size:13px;color:#1a3a6b;margin-top:4px;font-weight:500">${c.phone||'No phone'}</div>
+        </div>
+        <span class="badge b-${c.status||'noanswer'}">${sLabel(c.status)}</span>
+      </div>
+      <div class="det-grid">
+        <div class="det-item"><div class="lbl">Source</div><div class="val">${c.source||'—'}</div></div>
+        <div class="det-item"><div class="lbl">Windows / stories</div><div class="val">${c.windows||'—'} windows, ${c.stories||'?'} story</div></div>
+        <div class="det-item"><div class="lbl">Quoted</div><div class="val">${c.price?'$'+c.price:'—'}</div></div>
+        <div class="det-item"><div class="lbl">Paid</div><div class="val">${c.paid?'$'+c.paid+' via '+(c.payment||'?'):'—'}</div></div>
+        <div class="det-item"><div class="lbl">Appointment</div><div class="val">${c.date?fmtDate(c.date)+' '+(c.time?'@ '+fmtTime(c.time):''):'—'}</div></div>
+        <div class="det-item"><div class="lbl">Referred by</div><div class="val">${c.refby||'—'}</div></div>
+      </div>
+      ${c.notes?`<div style="background:#f7f5f0;border-radius:8px;padding:10px;font-size:13px;margin-top:4px">${c.notes}</div>`:''}
+    </div>
+    <div class="card">
+      <div class="card-title">Follow-up checklist</div>
+      ${chk('$20 hanger discount applied',c.hanger)}
+      ${chk('Confirmation text sent',c.conf)}
+      ${chk('Referral offer text sent',c.reftxt)}
+      ${chk('Has referred someone',c.referred)}
+      ${chk('Asked for Google review',c.rask)}
+      ${chk('Left a Google review',c.rleft)}
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="editCustomer('${c.id}')">&#9998; Edit</button>
+      <button class="btn danger" onclick="deleteCustomer('${c.id}')">&#128465; Delete</button>
+    </div>`;
+  goto('detail');
+}
+
+function editCustomer(id){
+  const c=customers.find(x=>x.id===id);
+  if(!c) return;
+  editingId=id;
+  document.getElementById('add-title').textContent='Edit customer';
+  const flds={first:c.first,last:c.last,phone:c.phone,addr:c.address,windows:c.windows,price:c.price,notes:c.notes,paid:c.paid,refby:c.refby,date:c.date,time:c.time};
+  Object.entries(flds).forEach(([k,v])=>{const el=document.getElementById('f-'+k);if(el)el.value=v||'';});
+  document.getElementById('f-source').value=c.source||'door knock';
+  document.getElementById('f-stories').value=c.stories||'1';
+  document.getElementById('f-status').value=c.status||'quoted';
+  document.getElementById('f-payment').value=c.payment||'';
+  ['hanger','conf','reftxt','referred','rask','rleft'].forEach(k=>{
+    document.getElementById('f-'+k).checked=!!c[k];
+  });
+  goto('add');
+}
+
+function saveCustomer(){
+  const first=document.getElementById('f-first').value.trim();
+  if(!first){alert('Please enter a first name');return;}
+  const d={
+    id:editingId||uid(),
+    created:editingId?(customers.find(x=>x.id===editingId)||{}).created:Date.now(),
+    first,
+    last:document.getElementById('f-last').value.trim(),
+    phone:document.getElementById('f-phone').value.trim(),
+    address:document.getElementById('f-addr').value.trim(),
+    source:document.getElementById('f-source').value,
+    windows:document.getElementById('f-windows').value,
+    stories:document.getElementById('f-stories').value,
+    price:document.getElementById('f-price').value,
+    status:document.getElementById('f-status').value,
+    date:document.getElementById('f-date').value,
+    time:document.getElementById('f-time').value,
+    notes:document.getElementById('f-notes').value.trim(),
+    paid:document.getElementById('f-paid').value,
+    payment:document.getElementById('f-payment').value,
+    refby:document.getElementById('f-refby').value.trim(),
+    hanger:document.getElementById('f-hanger').checked,
+    conf:document.getElementById('f-conf').checked,
+    reftxt:document.getElementById('f-reftxt').checked,
+    referred:document.getElementById('f-referred').checked,
+    rask:document.getElementById('f-rask').checked,
+    rleft:document.getElementById('f-rleft').checked,
+  };
+  if(editingId){
+    const i=customers.findIndex(x=>x.id===editingId);
+    if(i>=0) customers[i]=d;
+  } else {
+    customers.unshift(d);
+  }
+  editingId=null;
+  saveAll();
+  clearForm();
+  renderAll();
+  goto('customers');
+}
+
+function deleteCustomer(id){
+  if(!confirm('Delete this customer?')) return;
+  customers=customers.filter(x=>x.id!==id);
+  saveAll();
+  renderAll();
+  goto('customers');
+}
+
+function clearForm(){
+  editingId=null;
+  document.getElementById('add-title').textContent='New customer';
+  ['f-first','f-last','f-phone','f-addr','f-windows','f-price','f-notes','f-paid','f-refby','f-date','f-time'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  ['f-hanger','f-conf','f-reftxt','f-referred','f-rask','f-rleft'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.checked=false;
+  });
+  document.getElementById('f-source').value='door knock';
+  document.getElementById('f-stories').value='1';
+  document.getElementById('f-status').value='quoted';
+  document.getElementById('f-payment').value='';
+}
+
+/* STREETS */
+function setSF(f,btn){
+  streetFilter=f;
+  document.querySelectorAll('#page-map .fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const q=document.querySelector('#page-map .search');
+  renderStreets(q?q.value:'');
+}
+
+function setStreetStatus(s,status){
+  if(!streets[s]) streets[s]={};
+  streets[s].status=streets[s].status===status?null:status;
+  saveAll();
+  renderStreets(document.querySelector('#page-map .search').value);
+  updateMapStats();
+  renderDash();
+}
+
+function sid(s){return s.replace(/[^a-z0-9]/gi,'_');}
+
+function toggleHanger(s){
+  if(!streets[s]) streets[s]={};
+  streets[s].hanger=!streets[s].hanger;
+  saveAll();
+  const q=document.querySelector('#page-map .search');
+  renderStreets(q?q.value:'');
+  updateMapStats();
+}
+
+function toggleNote(s){
+  if(!streets[s]) streets[s]={};
+  streets[s].noteOpen=!streets[s].noteOpen;
+  const q=document.querySelector('#page-map .search');
+  renderStreets(q?q.value:'');
+  setTimeout(()=>{
+    const ta=document.getElementById('note-'+sid(s));
+    if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}
+  },50);
+}
+
+function saveNote(s,val){
+  if(!streets[s]) streets[s]={};
+  streets[s].note=val.trim();
+  saveAll();
+}
+
+function renderStreets(q=''){
+  const el=document.getElementById('street-list');
+  const hf=document.getElementById('hood-filter');
+  const hoodFilter=hf?hf.value:'all';
+  let list=STREETS.filter(s=>{
+    const mq=s.toLowerCase().includes((q||'').toLowerCase());
+    const st=(streets[s]||{}).status||null;
+    const hood=STREET_HOOD[s]||'';
+    const mh=hoodFilter==='all'||hood===hoodFilter;
+    if(!mq||!mh) return false;
+    if(streetFilter==='all') return true;
+    if(streetFilter==='none') return !st;
+    return st===streetFilter;
+  });
+  if(!list.length){el.innerHTML='<div class="empty" style="padding:1.5rem">No streets match</div>';return;}
+  const grouped={};
+  list.forEach(s=>{
+    const h=STREET_HOOD[s]||'Other';
+    if(!grouped[h]) grouped[h]=[];
+    grouped[h].push(s);
+  });
+  const hoodColors={'West U':'#1e40af','Southside':'#166534'};
+  el.innerHTML=Object.entries(grouped).map(([hood,strs])=>`
+    <div style="font-size:11px;font-weight:600;color:${hoodColors[hood]||'#374151'};text-transform:uppercase;letter-spacing:0.06em;padding:10px 4px 4px;border-bottom:1px solid var(--border);margin-bottom:4px">${hood} — ${strs.length} streets</div>
+    ${strs.map(s=>{
+      const sd=streets[s]||{};
+      const st=sd.status||null;
+      const hangerLeft=!!sd.hanger;
+      const note=sd.note||'';
+      const noteOpen=!!sd.noteOpen;
+      const key=sid(s);
+      return `<div class="street-row" id="sr-${key}" style="flex-direction:column;align-items:stretch">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap">
+          <div style="flex-shrink:0;min-width:110px">
+            <div style="display:flex;align-items:center;gap:5px">
+              <div class="street-name">${s.replace(' (S)','')}</div>
+              ${hangerLeft?'<span style="font-size:13px" title="Hanger left">🪧</span>':''}
+              ${note?'<span style="font-size:11px;color:var(--gold)" title="Has notes">●</span>':''}
+            </div>
+            <div class="street-status">${st?sLabel(st):'Not started'}</div>
+          </div>
+          <div class="sbts">
+            <button class="sbt ${st==='knocked'?'k':''}" onclick="setStreetStatus('${s}','knocked')">Knocked</button>
+            <button class="sbt ${st==='lead'?'l':''}" onclick="setStreetStatus('${s}','lead')">Lead</button>
+            <button class="sbt ${st==='scheduled'?'s':''}" onclick="setStreetStatus('${s}','scheduled')">Sched.</button>
+            <button class="sbt ${st==='completed'?'c':''}" onclick="setStreetStatus('${s}','completed')">Done</button>
+            <button class="sbt ${st==='noanswer'?'n':''}" onclick="setStreetStatus('${s}','noanswer')">No ans.</button>
+            <button class="sbt ${st==='notinterested'?'x':''}" onclick="setStreetStatus('${s}','notinterested')">Not int.</button>
+            <button class="sbt ${hangerLeft?'k':''}" onclick="toggleHanger('${s}')" title="Toggle hanger left" style="font-size:13px">🪧</button>
+            <button class="sbt ${noteOpen?'k':''}" onclick="toggleNote('${s}')" title="Add note" style="font-size:13px">${note?'📝✏️':'📝'}</button>
+          </div>
+        </div>
+        ${noteOpen||note?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+          <textarea
+            id="note-${key}"
+            placeholder="Street notes: gate codes, dogs, hot leads, anything useful..."
+            onblur="saveNote('${s}',this.value)"
+            style="width:100%;font-size:12px;padding:7px 9px;border:1px solid var(--border);border-radius:7px;background:#fffdf8;color:var(--text);font-family:var(--font-body);resize:vertical;min-height:54px;outline:none;line-height:1.5"
+          >${note}</textarea>
+        </div>`:''}
+      </div>`;
+    }).join('')}
+  `).join('');
+}
+
+function updateMapStats(){
+  const total=STREETS.length;
+  document.getElementById('m-total').textContent=total;
+  document.getElementById('m-knocked').textContent=STREETS.filter(s=>(streets[s]||{}).status==='knocked').length;
+  document.getElementById('m-lead').textContent=STREETS.filter(s=>(streets[s]||{}).status==='lead').length;
+  document.getElementById('m-hanger').textContent=STREETS.filter(s=>(streets[s]||{}).hanger).length;
+  const started=STREETS.filter(s=>(streets[s]||{}).status).length;
+  document.getElementById('m-pct').textContent=Math.round(started/total*100)+'%';
+}
+
+/* UTILS */
+function sLabel(s){return{quoted:'Quoted',scheduled:'Scheduled',completed:'Completed',noanswer:'No answer',notinterested:'Not interested'}[s]||s||'—'}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${m}/${day}/${y}`}
+function fmtTime(t){if(!t)return'';const[h,m]=t.split(':');const hr=parseInt(h);return`${hr>12?hr-12:hr||12}:${m} ${hr>=12?'PM':'AM'}`}
+
+loadAll();
+</script>
+</body>
+</html>
